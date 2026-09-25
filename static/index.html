@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0c1017" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>Tailkey · Remote NumPad</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="Tailkey 首頁">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none"><path d="M8 7.5h16v17H8z" stroke="currentColor" stroke-width="1.6"/><path d="M11 11h3m4 0h3M11 16h3m4 0h3M11 21h3m4 0h3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+          </span>
+          <span class="brand-name">TAILKEY</span>
+        </a>
+        <div class="connection" id="connection" data-state="connecting" role="status" aria-live="polite">
+          <span class="connection-dot" aria-hidden="true"></span>
+          <span id="connection-label">連線中</span>
+        </div>
+      </header>
+
+      <section class="intro" aria-labelledby="title">
+        <div class="eyebrow"><span class="eyebrow-line"></span>REMOTE INPUT · WINDOWS</div>
+        <h1 id="title">數字鍵盤<span class="title-period">.</span></h1>
+        <p>按鍵會送到 Windows 目前作用中的程式</p>
+      </section>
+
+      <section class="keypad-card" aria-label="遠端數字鍵盤">
+        <div class="card-heading">
+          <span>NUMPAD</span>
+          <span class="card-heading-right">
+            <span class="tailnet-label"><span class="pulse-mark"></span>TAILNET</span>
+            <button class="key key-backspace" type="button" data-key="BACKSPACE" aria-label="Backspace，刪除一個字元">
+              <span aria-hidden="true">⌫</span><span>Backspace</span>
+            </button>
+          </span>
+        </div>
+        <div class="keypad" id="keypad">
+          <button class="key key-number" data-key="NUMPAD7" aria-label="NumPad 7">7</button>
+          <button class="key key-number" data-key="NUMPAD8" aria-label="NumPad 8">8</button>
+          <button class="key key-number" data-key="NUMPAD9" aria-label="NumPad 9">9</button>
+          <button class="key key-operation" data-key="DIVIDE" aria-label="NumPad 除">÷</button>
+
+          <button class="key key-number" data-key="NUMPAD4" aria-label="NumPad 4">4</button>
+          <button class="key key-number" data-key="NUMPAD5" aria-label="NumPad 5">5</button>
+          <button class="key key-number" data-key="NUMPAD6" aria-label="NumPad 6">6</button>
+          <button class="key key-operation" data-key="MULTIPLY" aria-label="NumPad 乘">×</button>
+
+          <button class="key key-number" data-key="NUMPAD1" aria-label="NumPad 1">1</button>
+          <button class="key key-number" data-key="NUMPAD2" aria-label="NumPad 2">2</button>
+          <button class="key key-number" data-key="NUMPAD3" aria-label="NumPad 3">3</button>
+          <button class="key key-operation" data-key="SUBTRACT" aria-label="NumPad 減">−</button>
+
+          <button class="key key-zero" data-key="NUMPAD0" aria-label="NumPad 0">0</button>
+          <button class="key key-number key-decimal" data-key="DECIMAL" aria-label="NumPad 小數點">.</button>
+          <button class="key key-operation" data-key="ADD" aria-label="NumPad 加">+</button>
+
+          <button class="key key-enter" data-key="NUMPAD_ENTER" aria-label="NumPad Enter"><span>Enter</span><span class="enter-mark">↵</span></button>
+        </div>
+        <div class="card-footer">
+          <span class="key-hint"><span class="hint-key">0—9</span> 數字與運算鍵</span>
+          <span class="repeat-hint">按住可連續輸入 <span aria-hidden="true">↗</span></span>
+        </div>
+      </section>
+
+      <button class="disconnect-button" id="disconnect-button" type="button" disabled>
+        <span aria-hidden="true">⏻</span>停止 Tailkey 連線
+      </button>
+
+      <footer class="app-footer">
+        <span class="footer-indicator" aria-hidden="true"></span>
+        <span>Windows 桌面</span>
+        <span class="footer-separator">·</span>
+        <span>由 Tailscale 私密連線</span>
+      </footer>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </main>
+  </body>
+</html>
