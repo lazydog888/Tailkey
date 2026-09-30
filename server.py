@@ -216,6 +216,7 @@ class KeypadHandler(BaseHTTPRequestHandler):
         files = {
             "/": (STATIC / "index.html", "text/html; charset=utf-8"),
             "/app.js": (STATIC / "app.js", "text/javascript; charset=utf-8"),
+            "/i18n.js": (STATIC / "i18n.js", "text/javascript; charset=utf-8"),
             "/style.css": (STATIC / "style.css", "text/css; charset=utf-8"),
         }
         item = files.get(path)

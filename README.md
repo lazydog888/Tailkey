@@ -1,6 +1,20 @@
 # Tailkey
 
+Development history / 開發紀錄：[專案日誌](PROJECT_LOG.md)。
+
 Use an iPhone or iPad as a remote NumPad for the Windows app that is currently in front.
+
+## Portable Windows app / Windows 可攜版
+
+Extract `Tailkey-Windows-x64.zip` and double-click `Tailkey.exe`. Choose same-Wi-Fi / hotspot mode or the tailcat experiment. No separate Python, Node.js, Go or Tailscale installation is required for this package. See [English and Chinese instructions](PORTABLE.md).
+
+解壓縮可攜版後雙擊 `Tailkey.exe`，選擇同 Wi-Fi／手機熱點或 tailcat 實驗模式即可開始。電腦配對頁面與手機鍵盤都提供繁體中文／English，預設依瀏覽器語言選擇。切換語言會重新載入頁面，手機需重新配對。
+
+From source, double-click `Tailkey.cmd`; it uses the portable executable if present, otherwise prepares the Python environment and opens the same launcher. Tailcat mode needs the native helper/browser assets built first.
+
+To rebuild the portable package, install `webrtc/requirements.txt` and `packaging-requirements.txt` into `.venv-webrtc`, build tailcat with `webrtc/build-tailcat.ps1` (Go required for building), then run `build-portable.ps1`. Output is `release/Tailkey-Windows-x64.zip`. Generated binaries and private configuration are excluded from Git. This package does not include local HTTPS certificate setup; physical iPhone 4G testing remains outstanding.
+
+An experimental same-Wi-Fi WebRTC version is available through `start-webrtc.cmd`; see [the prototype instructions](webrtc/README.md). The original Tailscale version uses `start.cmd` as before.
 
 ## Start the keypad
 

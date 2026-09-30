@@ -133,7 +133,7 @@ async function drainTapQueue() {
 async function stopTailkey() {
   if (connectionState !== "connected") return;
   const confirmed = window.confirm(
-    "要停止 Windows 上的 Tailkey 服務嗎？所有 iPad/iPhone 都會斷線。要重新使用，請在 Windows 上啟動 start.cmd。",
+    window.TailkeyI18n.translate("要停止 Windows 上的 Tailkey 服務嗎？所有 iPad/iPhone 都會斷線。要重新使用，請在 Windows 上啟動 start.cmd。"),
   );
   if (!confirmed) return;
 

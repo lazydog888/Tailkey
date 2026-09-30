@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tailkey · 配對</title><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/prototype.css"><script src="/i18n.js" defer></script><script src="/host.js" defer></script></head>
+<body><main class="pair-shell"><h1>Tailkey WebRTC</h1><p>手機掃碼後，請在手機輸入電腦顯示的六位配對碼。</p><p class="notice">預設為同 Wi-Fi 原型，請使用可信任的網路。</p>
+<p id="status" role="status">準備中</p><p id="mode"></p><p id="network" class="notice"></p>
+<div id="invitation" hidden><img id="qr" alt="限時配對 QR code"><p id="countdown"></p><input id="url" readonly aria-label="配對網址"><button id="copy">複製網址</button></div>
+<div id="request" hidden><h2 id="peer"></h2><p>請在你的手機輸入這個六位配對碼。輸錯三次會取消連線。</p></div>
+<p id="presses"></p><div class="actions"><button id="new">產生新的邀請</button><button id="disconnect" disabled>中斷連線</button></div>
+<p>配對成功後，請在 Windows 點選要接收按鍵的程式。關閉服務視窗或按 Ctrl+C 可停止服務。</p>
+</main></body></html>

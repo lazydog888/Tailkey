@@ -1,0 +1,15 @@
+.pair-shell { width: min(620px, 100%); margin: 2rem auto; padding: 1.5rem; }
+.pair-shell h1 { font-size: 2rem; }
+.pair-shell p { line-height: 1.6; }
+.pair-shell input { width: 100%; color: var(--text); background: var(--panel); border: 1px solid var(--muted); padding: .8rem; border-radius: .5rem; }
+.pair-shell button { color: var(--bg); background: var(--accent); border: 0; border-radius: .6rem; padding: .8rem 1rem; cursor: pointer; margin: .4rem .3rem .4rem 0; }
+.pair-shell button:disabled { opacity: .4; cursor: default; }
+#qr { width: min(320px,100%); height: auto; background: white; padding: 1rem; border-radius: .75rem; }
+.notice { color: var(--muted); font-size: .85rem; }
+.pair-form { margin: 1rem 0; display: grid; gap: .7rem; }
+.pair-form[hidden] { display: none; }
+.pair-form input { width: 100%; padding: .8rem; font-size: 1.5rem; letter-spacing: .25em; }
+.pair-form textarea { width: 100%; padding: .7rem; color: var(--text); background: var(--panel); border-radius: .5rem; }
+.pair-form button { padding: .8rem; font-size: 1rem; }
+#status, #pair-status { color: var(--accent); }
+#pair-status { line-height: 1.5; margin-bottom: 1rem; }

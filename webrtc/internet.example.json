@@ -1,0 +1,5 @@
+{
+  "brokerUrl": "https://pair.example.com",
+  "hostKey": "REPLACE_WITH_A_RANDOM_SECRET_OF_AT_LEAST_32_CHARACTERS",
+  "iceServers": []
+}
