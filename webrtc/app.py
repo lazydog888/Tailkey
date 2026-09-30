@@ -28,7 +28,27 @@ INVITE_TTL = 120
 PAIR_DEADLINE = 120
 HEARTBEAT_TIMEOUT = 4
 KEY_TTL_MS = 1000
+IDLE_TIMEOUT = 300
+# Browser tailcat fetches its DERP map from tailcat.dev, probes relays over HTTPS and relays over WSS.
+TAILCAT_CONNECT = "https://tailcat.dev https://*.ipn.dev wss://*.ipn.dev"
 STATE = web.AppKey("state", object)
+
+
+def toast(title, body):
+    """Best-effort Windows notification; pairing never depends on it."""
+    import base64
+    import subprocess
+    quote = lambda text: "'" + text.replace("'", "''") + "'"
+    script = ("$m=[Windows.UI.Notifications.ToastNotificationManager,Windows.UI.Notifications,ContentType=WindowsRuntime];"
+              "$x=$m::GetTemplateContent([Windows.UI.Notifications.ToastTemplateType]::ToastText02);"
+              f"$t=$x.GetElementsByTagName('text');$t.Item(0).InnerText={quote(title)};$t.Item(1).InnerText={quote(body)};"
+              "$m::CreateToastNotifier('{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}\\WindowsPowerShell\\v1.0\\powershell.exe')"
+              ".Show([Windows.UI.Notifications.ToastNotification]::new($x))")
+    try:
+        subprocess.Popen(["powershell.exe", "-NoProfile", "-NonInteractive", "-EncodedCommand", base64.b64encode(script.encode("utf-16-le")).decode()],
+                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=0x08000000)
+    except OSError:
+        pass
 
 
 @dataclass
@@ -42,6 +62,7 @@ class Peer:
     last_ping: float = 0
     last_seq: int = 0
     attempts: int = 0
+    last_active: float = 0
 
 
 class State:
@@ -59,6 +80,7 @@ class State:
         self.ice_servers = []
         self.bridge = None
         self.tailcat = None
+        self.notify = None
 
     def invite_url(self):
         if self.tailcat:
@@ -117,8 +139,12 @@ class State:
                     asyncio.create_task(self.end(peer))
                 return
             peer.approved = True
+            peer.last_active = time.monotonic()
             self.phase = "connected"
             self.send(peer, {"type": "approved"})
+            if self.notify:
+                self.notify("Tailkey：手機已配對 / Phone paired",
+                            "不是你本人？請在電腦配對頁按「中斷連線」。 Not you? Click Disconnect on the pairing page.")
             return
         if msg == {"type": "disconnect"}:
             peer.approved = False
@@ -145,6 +171,7 @@ class State:
             try:
                 self.inject(msg["key"])
                 self.presses += 1
+                peer.last_active = time.monotonic()
             except OSError:
                 error = "input_failed"
         self.send(peer, {"type": "ack", "seq": seq, "error": error})
@@ -178,7 +205,7 @@ async def guards(request, handler):
     response = await handler(request)
     response.headers.update({"Cache-Control": "no-store", "Referrer-Policy": "no-referrer",
         "X-Content-Type-Options": "nosniff", "X-Frame-Options": "DENY",
-        "Content-Security-Policy": ("default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' blob:; connect-src 'self' https://tailcat.dev wss:; object-src 'none'; frame-ancestors 'none'; base-uri 'none'" if state.tailcat else "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob:; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'none'")})
+        "Content-Security-Policy": (f"default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' blob:; connect-src 'self' {TAILCAT_CONNECT}; object-src 'none'; frame-ancestors 'none'; base-uri 'none'" if state.tailcat else "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob:; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'none'")})
     return response
 
 
@@ -367,8 +394,13 @@ async def watchdog(app):
         peer = state.peer
         if not peer:
             continue
-        age = time.monotonic() - peer.started
-        if (not peer.approved and age > PAIR_DEADLINE) or (peer.last_ping and time.monotonic() - peer.last_ping > HEARTBEAT_TIMEOUT):
+        now = time.monotonic()
+        if peer.approved and now - peer.last_active > IDLE_TIMEOUT:
+            # An unattended, unlocked phone should not keep keyboard access indefinitely.
+            state.send(peer, {"type": "idle"})
+            await asyncio.sleep(0.2)
+            await state.end(peer)
+        elif (not peer.approved and now - peer.started > PAIR_DEADLINE) or (peer.last_ping and now - peer.last_ping > HEARTBEAT_TIMEOUT):
             await state.end(peer)
 
 
@@ -423,14 +455,22 @@ def main():
     parser.add_argument("--public-url", help="Exact HTTPS origin of the test tunnel")
     parser.add_argument("--internet", action="store_true", help="Outbound connection to your pairing broker")
     parser.add_argument("--tailcat", action="store_true", help="Exchange WebRTC signaling over bundled tailcat")
+    parser.add_argument("--auto", action="store_true", help="Use tailcat when available, otherwise same-Wi-Fi mode")
     parser.add_argument("--web-url", help="HTTPS URL of your static Tailkey browser page")
     args = parser.parse_args()
+    if args.auto:
+        if args.tailcat or args.internet or args.public_url:
+            parser.error("--auto chooses the mode itself")
+        tailcat_assets = (ROOT.parent / "tools/tailkey-tailcat.exe").exists() and (ROOT.parent / "tools/tailcat-web/main.wasm.gz").exists()
+        if not tailcat_assets:
+            print("Tailcat files not found; using same-Wi-Fi mode.", flush=True)
+        args.tailcat = tailcat_assets
     if args.tailcat and (args.internet or args.public_url):
         parser.error("Tailcat mode is separate from broker/reverse-proxy mode")
     if args.web_url:
         from urllib.parse import urlsplit
         parsed_web = urlsplit(args.web_url)
-        if not args.tailcat or parsed_web.scheme != "https" or not parsed_web.hostname or parsed_web.query or parsed_web.fragment or parsed_web.username or parsed_web.password:
+        if not (args.tailcat or args.auto) or parsed_web.scheme != "https" or not parsed_web.hostname or parsed_web.query or parsed_web.fragment or parsed_web.username or parsed_web.password:
             parser.error("--web-url requires tailcat mode and an HTTPS page URL without query/fragment")
     if args.internet and args.public_url:
         parser.error("Choose --internet or --public-url")
@@ -449,25 +489,33 @@ def main():
             parser.error("--public-url must be an HTTPS origin")
         args.public_url = f"https://{parsed.netloc}"
     ipaddress.IPv4Address(args.host_ip)
-    listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # Listen only where a phone must connect: the LAN address, never every interface (VPNs, other adapters).
+    # A hosted page (--web-url) signals over tailcat, so strict tailcat mode needs no LAN listener at all.
+    loopback_only = args.internet or (args.tailcat and args.web_url and not args.auto)
+    addresses = ["127.0.0.1"] + ([] if loopback_only or args.host_ip == "127.0.0.1" else [args.host_ip])
+    listeners = []
     try:
-        listener.bind(("127.0.0.1" if args.internet else "0.0.0.0", args.port))
+        for address in addresses:
+            listeners.append(socket.socket(socket.AF_INET, socket.SOCK_STREAM))
+            listeners[-1].bind((address, args.port))
+            listeners[-1].setblocking(False)
     except OSError as error:
-        listener.close()
+        for listener in listeners:
+            listener.close()
         if getattr(error, "winerror", None) == 10048 or error.errno in (10048, 98):
             print(f"Tailkey WebRTC: port {args.port} is already in use. Close the existing service window first.", file=sys.stderr)
             print("Or start a separate instance with: start-webrtc.cmd --port 8767", file=sys.stderr)
             raise SystemExit(1) from None
         raise
-    listener.setblocking(False)
     app = make_app(args.host_ip, args.port, (lambda _key: None) if args.dry_run else press_key, args.dry_run)
     app[STATE].public_url = args.public_url
     if args.tailcat:
         from tailcat import TailcatBridge
         if not (ROOT.parent / "tools/tailkey-tailcat.exe").exists() or not (ROOT.parent / "tools/tailcat-web/main.wasm.gz").exists():
-            listener.close()
+            for listener in listeners:
+                listener.close()
             parser.error("Build tailcat assets with webrtc/build-tailcat.ps1 first")
-        app[STATE].tailcat = TailcatBridge(app[STATE], args.web_url)
+        app[STATE].tailcat = TailcatBridge(app[STATE], args.web_url, fallback=args.auto)
         tailcat_config = json.loads(config_path.read_text(encoding="utf-8-sig")) if config_path.exists() else {}
         # Direct-only experiment: TURN is deliberately not offered in tailcat mode.
         for entry in tailcat_config.get("iceServers", [{"urls": "stun:stun.cloudflare.com:3478"}]):
@@ -495,11 +543,13 @@ def main():
         else:
             print(url, flush=True)
 
+    app[STATE].notify = toast
     app.on_startup.append(ready)
     try:
-        web.run_app(app, sock=listener, access_log=None, print=None)
+        web.run_app(app, sock=listeners, access_log=None, print=None)
     finally:
-        listener.close()
+        for listener in listeners:
+            listener.close()
 
 
 if __name__ == "__main__":

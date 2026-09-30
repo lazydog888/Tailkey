@@ -6,9 +6,9 @@ Use an iPhone or iPad as a remote NumPad for the Windows app that is currently i
 
 ## Portable Windows app / Windows 可攜版
 
-Extract `Tailkey-Windows-x64.zip` and double-click `Tailkey.exe`. Choose same-Wi-Fi / hotspot mode or the tailcat experiment. No separate Python, Node.js, Go or Tailscale installation is required for this package. See [English and Chinese instructions](PORTABLE.md).
+Extract `Tailkey-Windows-x64.zip` and double-click `Tailkey.exe`. It uses tailcat signaling when the Internet is reachable and otherwise falls back to same-Wi-Fi mode (`Tailkey.exe --lan` forces same-Wi-Fi). No separate Python, Node.js, Go or Tailscale installation is required for this package. See [English and Chinese instructions](PORTABLE.md).
 
-解壓縮可攜版後雙擊 `Tailkey.exe`，選擇同 Wi-Fi／手機熱點或 tailcat 實驗模式即可開始。電腦配對頁面與手機鍵盤都提供繁體中文／English，預設依瀏覽器語言選擇。切換語言會重新載入頁面，手機需重新配對。
+解壓縮可攜版後雙擊 `Tailkey.exe` 即可開始；能連上網際網路時自動使用 tailcat 交換配對資訊，否則改用同 Wi-Fi 模式（`Tailkey.exe --lan` 可強制同 Wi-Fi）。電腦配對頁面與手機鍵盤都提供繁體中文／English，預設依瀏覽器語言選擇。切換語言會重新載入頁面，手機需重新配對。
 
 From source, double-click `Tailkey.cmd`; it uses the portable executable if present, otherwise prepares the Python environment and opens the same launcher. Tailcat mode needs the native helper/browser assets built first.
 

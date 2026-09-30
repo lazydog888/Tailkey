@@ -7,7 +7,7 @@ import unittest
 from aiohttp import ClientSession
 from aiohttp.test_utils import TestServer
 from aiortc import RTCConfiguration, RTCPeerConnection, RTCSessionDescription
-from app import STATE, make_app
+from app import IDLE_TIMEOUT, STATE, make_app
 
 
 class PairingTests(unittest.IsolatedAsyncioTestCase):
@@ -126,6 +126,25 @@ class PairingTests(unittest.IsolatedAsyncioTestCase):
         await asyncio.sleep(0.8)
         self.assertIsNone(self.state.peer)
         self.assertEqual(self.keys, [])
+
+    async def test_pairing_notifies_and_idle_session_ends(self):
+        notices = []
+        self.state.notify = lambda title, body: notices.append(title)
+        channel, messages, _ = await self.pair()
+        channel.send(json.dumps({"type": "ping", "id": 1}))
+        await self.receive(messages, "pong")
+        channel.send(json.dumps({"type": "pair", "code": self.state.peer.code}))
+        await self.receive(messages, "approved")
+        self.assertEqual(len(notices), 1)
+        channel.send(json.dumps({"type": "ping", "id": 2}))
+        await self.receive(messages, "pong")
+        self.state.peer.last_active = time.monotonic() - IDLE_TIMEOUT - 1
+        await self.receive(messages, "idle")
+        for _ in range(30):
+            if self.state.peer is None:
+                break
+            await asyncio.sleep(0.05)
+        self.assertIsNone(self.state.peer)
 
 
 if __name__ == "__main__":

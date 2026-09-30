@@ -44,7 +44,7 @@ async function poll() {
     el("peer").textContent = data.code ? `配對碼：${data.code}` : "";
     el("presses").textContent = `本次啟動已接受 ${data.presses} 次按鍵`;
     el("disconnect").disabled = !["pending", "connected", "connecting", "inviting"].includes(data.phase);
-    if (waitingForService && data.brokerOnline) {
+    if (waitingForService && (data.brokerOnline || !data.internet)) {
       waitingForService = false;
       // The poll completes before generating a new invite.
       setTimeout(newInvite, 0);

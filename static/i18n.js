@@ -67,6 +67,7 @@
     "無法完成配對": "Pairing failed", "配對等待逾時，請產生新邀請": "Pairing timed out. Create a new invitation.",
     "無法跨網路連線，此網路可能需要 TURN 中繼；請在電腦產生新邀請": "Direct connection failed. This network may require TURN. Create a new invitation on the PC.",
     "頁面已離開前景，已停止輸入；請重新配對": "Page left the foreground. Input stopped; pair again.",
+    "閒置超過 5 分鐘，已自動中斷；請在電腦產生新邀請": "Idle for 5 minutes, disconnected automatically. Create a new invitation on the PC.",
     "連線失敗": "Connection failed", "正在配對": "Pairing",
     "未連線": "Disconnected", "已連線": "Connected", "連線中": "Connecting",
     "離線鍵盤需透過 HTTPS 安裝；目前仍可使用一般網頁配對。": "Offline installation requires HTTPS. Regular webpage pairing is still available.",

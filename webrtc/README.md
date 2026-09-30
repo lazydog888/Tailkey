@@ -6,7 +6,7 @@ This prototype provides a browser keypad with a direct WebRTC DataChannel to Win
 
 ## Start
 
-The portable Windows package opens through `Tailkey.exe`; choose option 1 for this mode. The source launcher is `Tailkey.cmd`. Both the desktop and phone pages include English/Traditional Chinese selection. Mobile language changes reload the page and require a new invitation.
+The portable Windows package opens through `Tailkey.exe`, which starts `--auto`: tailcat signaling when DERP is reachable, otherwise this same-Wi-Fi mode (`Tailkey.exe --lan` forces it). The service listens only on loopback and the detected LAN address, not on every interface. Paired sessions end after 5 idle minutes, and Windows shows a notification when a phone pairs. The source launcher is `Tailkey.cmd`. Both the desktop and phone pages include English/Traditional Chinese selection. Mobile language changes reload the page and require a new invitation.
 
 Run `start-webrtc.cmd` in the repository root. The local virtual environment is already prepared on the development machine; for a fresh checkout, `setup-webrtc.cmd` installs Python dependencies. Keep the service window open.
 

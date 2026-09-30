@@ -141,6 +141,8 @@ function message(event) {
     document.querySelector("#pair-code").value = "";
     document.querySelector("#pair-error").textContent = `配對碼錯誤，還有 ${data.remaining} 次機會`;
     if (!data.remaining) end("配對碼輸錯三次，請在電腦產生新邀請");
+  } else if (data.type === "idle") {
+    end("閒置超過 5 分鐘，已自動中斷；請在電腦產生新邀請");
   } else if (data.type === "approved") {
     // A heartbeat also confirms approval and synchronizes the clock before typing.
     ping();

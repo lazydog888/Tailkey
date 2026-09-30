@@ -10,6 +10,10 @@ DEST = ROOT.parent / "tools/tailkey-web"
 DEST.mkdir(parents=True, exist_ok=True)
 html = (ROOT.parent / "static/index.html").read_text(encoding="utf-8")
 html = html.replace('src="/app.js"', 'src="./wasm_exec.js" defer></script><script src="./tailcat_transport.js" defer></script><script src="./pwa.js" defer></script><script src="./mobile.js"')
+# Static hosts (e.g. GitHub Pages) cannot send headers; keep in sync with the tailcat CSP in app.py.
+csp = ("default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' blob:; "
+       "connect-src 'self' https://tailcat.dev https://*.ipn.dev wss://*.ipn.dev; object-src 'none'; base-uri 'none'")
+html = html.replace('<meta charset="utf-8" />', f'<meta charset="utf-8" />\n    <meta http-equiv="Content-Security-Policy" content="{csp}" />')
 html = html.replace('</head>', '<link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icon-192.png"></head>')
 html = html.replace('src="/i18n.js"', 'src="./i18n.js"')
 html = html.replace('<link rel="stylesheet" href="/style.css" />', '<link rel="stylesheet" href="./style.css" /><link rel="stylesheet" href="./prototype.css" />')

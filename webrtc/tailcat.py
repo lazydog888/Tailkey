@@ -9,8 +9,8 @@ import sys
 
 
 class TailcatBridge:
-    def __init__(self, state, web_url):
-        self.state, self.web_url = state, web_url
+    def __init__(self, state, web_url, fallback=False):
+        self.state, self.web_url, self.fallback = state, web_url, fallback
         self.secret = secrets.token_urlsafe(32)
         self.addr = None
         self.online = False
@@ -43,3 +43,8 @@ class TailcatBridge:
                     self.process.kill()
                     await self.process.wait()
             await self.state.end()
+            if self.fallback and self.state.tailcat is self:
+                # Auto mode: without DERP, keep working as the plain same-Wi-Fi keypad.
+                self.state.tailcat = None
+                self.state.ice_servers = []
+                print("Tailcat unavailable; switched to same-Wi-Fi mode.", flush=True)
